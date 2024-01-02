@@ -51,6 +51,7 @@ lsc --help
 - **Files in Subfolders Listing**: Add an option to list files in subfolders recursively.
 - **Dynamic Directory Traversal**: Enable dynamic navigation through directories.
 - **More Metadata in Verbose Mode**: Display additional file metadata when using verbose mode.
+- **Add Tests**: Add a series of tests for simplified development and updating.
 
 ## License
 LSColored is released under the GNU GPLv3 License. See the [LICENSE](LICENSE) file for more details.
