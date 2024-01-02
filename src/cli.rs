@@ -1,11 +1,12 @@
 use lsc::File;
 use std::error::Error;
 
+//normal output ls -a or ls
 pub fn normal_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
 
     let mut output = String::new();
 
-    let num_col: usize = 4; //this need logic, maybe later
+    let num_col: usize = 4; //this needs logic, maybe later
 
     //Saves for every col the size of the biggest string
     let mut col_width: Vec<usize> = vec![];
@@ -31,6 +32,7 @@ pub fn normal_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
     Ok(output)
 }
 
+//long autput lsc -l or lsc -la
 pub fn long_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
     let mut output = String::new();
 

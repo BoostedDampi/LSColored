@@ -52,6 +52,9 @@ impl File {
 
         let meta = file.metadata()?;
         let file_type = meta.file_type();
+
+        //file_name() returns a OSstring which i have to convert to UTF8 by replacing all
+        //non utf characters, after that i convert it into a String.
         let string_name = file.file_name().to_string_lossy().to_string();
 
         let new_file =File{path: file.path(), 
@@ -99,8 +102,12 @@ impl File {
 
     //coloring rwxrwxrwx permissions for better understending
     pub fn perm_to_display(&mut self, color_profile: &ColorProfile) {
+        //this function is shit, it works but only becouse i blindly invert the mask array
+        //and zip(mask), i will eventualy rewrite this.
+
+        //the octal value is saved in the format other-group-user so i invert it?
         let mask: Vec<char> = format!("{:b}", self.permissions).chars().rev().collect();
-        //the octal value is saved in the format other-group-user so i invert it
+
         let perm = vec!["x".custom_color(color_profile.other_perm).to_string(),
                                      "w".custom_color(color_profile.other_perm).to_string(),
                                      "r".custom_color(color_profile.other_perm).to_string(),
@@ -111,6 +118,8 @@ impl File {
                                      "w".custom_color(color_profile.user_perm).to_string(),
                                      "r".custom_color(color_profile.user_perm).to_string()];
         let mut output = String::new();
+
+        //inverting the ziped iter does the trick.
         for (perm, mask) in perm.iter().zip(mask).rev() {
             output.push_str(if mask=='1' {perm} else {"-"});
         }
@@ -129,14 +138,16 @@ impl File {
 
     //formating size and adding unit format in extra variable
     pub fn size_to_display(& mut self, color_profile: &ColorProfile) {
+        dbg!(self.file_size);
         if self.file_size < 1000 {
             self.display_file_unit = "B ".to_string();
         }
-        else if self.file_size < 100000 {
+        else if self.file_size < 1000000 {
             self.file_size /= 1000;
+            //custom color returns it's own type, needs to be converted to String.
             self.display_file_unit = "KB".custom_color(color_profile.kb).to_string();
         }
-        else if self.file_size < 1000000 {
+        else if self.file_size < 1000000000 {
             self.file_size /= 1000000;
             self.display_file_unit = "MB".custom_color(color_profile.mb).to_string();
         }
@@ -146,6 +157,7 @@ impl File {
         }
     }
 
+    //TODO
     pub fn get_children(& mut self) -> Result<(), Box<dyn Error>> {
         let file_system = fs::read_dir(&self.name)?;
 
@@ -154,18 +166,25 @@ impl File {
             let new_child = File::new_file(file)?;
             self.children.push(new_child);
         }
+
+        //ignore hidden files if neccesary
+        //get number of children istead of file size
         Ok(())
     }
 
 }
+
+//a lot of this could be moved into file::new_file() but in this way I can controll better wich functions
+//get executed and i don't have to create logic for get_children() recursion.
 
 pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, color_profile: ColorProfile) -> Result<Vec<File>, Box<dyn Error>> {
     let mut string_files = vec![];
 
     for file in dir {
         let file = file?;
-        let string_name = &file.file_name().to_string_lossy().to_string();
 
+        //ignore hidden files if necesary
+        let string_name = &file.file_name().to_string_lossy().to_string();
         if remove_hidden && string_name.starts_with('.') {
             continue;
         }
@@ -177,6 +196,7 @@ pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, color_profile: Colo
         new_file.id_to_display(&color_profile);
         new_file.size_to_display(&color_profile);
 
+        //TODO
         /*if file.metadata()?.is_dir() {
             new_file.get_children()?;
         }
