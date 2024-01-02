@@ -1,4 +1,4 @@
-# LSColored 🌈📁
+# 📁 LSColored 🌈
 
 ## Introduction
 Welcome to LSColored, a custom implementation of the traditional `ls` command written in Rust 🦀. This project was developed as a fun and educational journey into Rust programming. It replicates the functionality of the classic directory listing command but also introduces improved colored output 🎨 and several additional features to enhance the user experience.
