@@ -6,7 +6,6 @@ Welcome to LSColored, a custom implementation of the traditional `ls` command wr
 ## Features
 - **Enhanced Colored Output**: Utilizes a rich color palette to distinguish file types, permissions, and other attributes.
 - **Additional Listing Options**: Includes new flags and parameters to customize the directory listing.
-- **Cross-Platform Compatibility**: Works seamlessly across different operating systems.
 - **User-Friendly Interface**: Improved readability and user interaction.
 
 ## Installation
