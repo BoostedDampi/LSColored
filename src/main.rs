@@ -23,18 +23,18 @@ pub fn run(args: Config) -> Result<(), Box<dyn Error>>{
 
     let mut file_system = fs::read_dir(args.path)?;
 
-    let color_profile = ColorProfile {dir: CustomColor {r: 233, g:196, b:106},
-                                                    sym_link: CustomColor {r:244, g:162, b:97},
-                                                    ex_file: CustomColor {r:42, g:157, b:143},
+    let color_profile = ColorProfile {dir: CustomColor {r: 33, g:158, b:188},
+                                                    sym_link: CustomColor {r:2, g:48, b:71},
+                                                    ex_file: CustomColor {r:255, g:183, b:3},
                                                     other: CustomColor { r: 255, g: 255, b: 255},
                                                     user_perm: CustomColor { r: 0, g: 121, b: 140 },
                                                     group_perm: CustomColor { r: 209, g: 73, b: 91 },
                                                     other_perm: CustomColor { r: 237, g: 174, b: 73 }, 
                                                     user_name_perm: CustomColor { r: 0, g: 121, b: 140 },
                                                     group_name_perm: CustomColor { r: 209, g: 73, b: 91 },
-                                                    kb: CustomColor { r: 255, g: 0, b: 0 },
-                                                    mb: CustomColor { r: 0, g: 255, b: 0 },
-                                                    gb: CustomColor { r: 0, g: 0, b: 255 }};
+                                                    kb: CustomColor { r: 173, g: 40, b: 49 },
+                                                    mb: CustomColor { r: 128, g: 14, b: 19 },
+                                                    gb: CustomColor { r: 100, g: 13, b: 20 }};
 
     let prepared_files = lsc::prepare_files(&mut file_system, !args.all_files, color_profile)?;
     

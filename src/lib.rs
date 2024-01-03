@@ -36,10 +36,11 @@ pub struct File {
 
     pub uid: u32,
     pub gid: u32,
-    pub display_ids: String,
+    pub display_uid: String,
+    pub display_gid: String,
 
     pub file_size: u64,
-    pub display_file_unit: String, //only B, MG, GB colored
+    pub display_file_unit: String, //only KB, MG, GB colored
 
     pub children: Vec<File>,
 }
@@ -66,7 +67,8 @@ impl File {
                                         display_perm: String::new(),
                                         uid: meta.st_uid(),
                                         gid: meta.st_gid(),
-                                        display_ids: String::new(),
+                                        display_uid: String::new(),
+                                        display_gid: String::new(),
                                         file_size: meta.st_size(),
                                         display_file_unit: String::new(),
                                         children: Vec::new(),
@@ -102,43 +104,50 @@ impl File {
 
     //coloring rwxrwxrwx permissions for better understending
     pub fn perm_to_display(&mut self, color_profile: &ColorProfile) {
-        //this function is shit, it works but only becouse i blindly invert the mask array
-        //and zip(mask), i will eventualy rewrite this.
 
-        //the octal value is saved in the format other-group-user so i invert it?
-        let mask: Vec<char> = format!("{:b}", self.permissions).chars().rev().collect();
-
-        let perm = vec!["x".custom_color(color_profile.other_perm).to_string(),
-                                     "w".custom_color(color_profile.other_perm).to_string(),
-                                     "r".custom_color(color_profile.other_perm).to_string(),
-                                     "x".custom_color(color_profile.group_perm).to_string(),
-                                     "w".custom_color(color_profile.group_perm).to_string(),
-                                     "r".custom_color(color_profile.group_perm).to_string(),
-                                     "x".custom_color(color_profile.user_perm).to_string(),
-                                     "w".custom_color(color_profile.user_perm).to_string(),
-                                     "r".custom_color(color_profile.user_perm).to_string()];
         let mut output = String::new();
 
-        //inverting the ziped iter does the trick.
-        for (perm, mask) in perm.iter().zip(mask).rev() {
+        //the octal value if converted to binary returns this result 1000000rwxrwxrwx.
+        //the lenght of the first part is between 6-7 bits.
+        let mut mask: Vec<char> = format!("{:b}", self.permissions).chars()
+                                                               .rev()
+                                                               .take(9)
+                                                               .collect();
+        mask.reverse();
+
+        let perm = vec!["r".custom_color(color_profile.user_perm).to_string(),
+                                     "w".custom_color(color_profile.user_perm).to_string(),
+                                     "x".custom_color(color_profile.user_perm).to_string(),
+                                     "r".custom_color(color_profile.group_perm).to_string(),
+                                     "w".custom_color(color_profile.group_perm).to_string(),
+                                     "x".custom_color(color_profile.group_perm).to_string(),
+                                     "r".custom_color(color_profile.other_perm).to_string(),
+                                     "w".custom_color(color_profile.other_perm).to_string(),
+                                     "x".custom_color(color_profile.other_perm).to_string()];
+        
+        
+        for (perm, mask) in perm.iter().zip(mask) {
             output.push_str(if mask=='1' {perm} else {"-"});
         }
+
         self.display_perm = output;
+
     }
 
     //user and group ids colored
     pub fn id_to_display(& mut self, color_profile: &ColorProfile) {
-        self.display_ids = format!("{} {}", self.uid
-                                                .to_string()
-                                                .custom_color(color_profile.user_name_perm),
-                                            self.gid
-                                                .to_string()
-                                                .custom_color(color_profile.group_name_perm));
+        self.display_uid = self.uid
+                                .to_string()
+                                .custom_color(color_profile.user_name_perm)
+                                .to_string();
+        self.display_gid = self.gid
+                                .to_string()
+                                .custom_color(color_profile.group_name_perm)
+                                .to_string();
     }
 
     //formating size and adding unit format in extra variable
     pub fn size_to_display(& mut self, color_profile: &ColorProfile) {
-        dbg!(self.file_size);
         if self.file_size < 1000 {
             self.display_file_unit = "B ".to_string();
         }
