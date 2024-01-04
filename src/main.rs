@@ -39,17 +39,18 @@ pub fn run(args: Config) -> Result<(), Box<dyn Error>>{
 
     let mut prepared_files = lsc::prepare_files(&mut file_system, !args.all_files, args.long_list, color_profile)?;
     
-    //TODO Sorting
+    
+    //Sorting of files, time complexity is n * log(n) worst case. I do not think it is needed to have an option to
+    //remove sorting as it has minimal impact.
     if args.sort_size {
         prepared_files.sort_unstable_by_key(|file| file.file_size);
     }
     else {
         prepared_files.sort_unstable_by_key(|file| file.name.chars().next().unwrap() as u32);
-
     }
 
 
-
+    //output cli functions
     if args.long_list > 0 {
         println!("{}", cli::long_output(&prepared_files)?);
     }

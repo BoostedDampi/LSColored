@@ -177,12 +177,14 @@ impl File {
             new_child.name_to_display(color_profile);
             self.children.push(new_child);
         }
-
         
-
         //ignore hidden files if neccesary
         //get number of children istead of file size
         Ok(())
+    }
+
+    pub fn display_children(&mut self, color_profile: &ColorProfile) {
+        //TODO
     }
 
 }
