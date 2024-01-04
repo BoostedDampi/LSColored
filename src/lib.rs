@@ -21,6 +21,7 @@ pub struct ColorProfile {
     pub kb: CustomColor,
     pub mb: CustomColor,
     pub gb: CustomColor,
+    pub file_num: CustomColor,
 
 }
 pub struct File {
@@ -48,7 +49,7 @@ pub struct File {
 
 impl File {
 
-    pub fn new_file(file: DirEntry) -> Result<File, Box<dyn Error>> {
+    pub fn new_file(file: &DirEntry) -> Result<File, Box<dyn Error>> {
         
 
         let meta = file.metadata()?;
@@ -167,14 +168,17 @@ impl File {
     }
 
     //TODO
-    pub fn get_children(& mut self) -> Result<(), Box<dyn Error>> {
+    pub fn get_children(& mut self, color_profile: &ColorProfile) -> Result<(), Box<dyn Error>> {
         let file_system = fs::read_dir(&self.name)?;
 
         for file in file_system {
             let file = file?;
-            let new_child = File::new_file(file)?;
+            let mut new_child = File::new_file(&file)?;
+            new_child.name_to_display(color_profile);
             self.children.push(new_child);
         }
+
+        
 
         //ignore hidden files if neccesary
         //get number of children istead of file size
@@ -186,7 +190,7 @@ impl File {
 //a lot of this could be moved into file::new_file() but in this way I can controll better wich functions
 //get executed and i don't have to create logic for get_children() recursion.
 
-pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, color_profile: ColorProfile) -> Result<Vec<File>, Box<dyn Error>> {
+pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, l_num: u8, color_profile: ColorProfile) -> Result<Vec<File>, Box<dyn Error>> {
     let mut string_files = vec![];
 
     for file in dir {
@@ -198,18 +202,28 @@ pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, color_profile: Colo
             continue;
         }
 
-        let mut new_file = File::new_file(file)?;
+        let mut new_file = File::new_file(&file)?;
 
         new_file.name_to_display(&color_profile);
-        new_file.perm_to_display(&color_profile);
-        new_file.id_to_display(&color_profile);
-        new_file.size_to_display(&color_profile);
 
-        //TODO
-        /*if file.metadata()?.is_dir() {
-            new_file.get_children()?;
+        if l_num > 0 { //if long option is selected
+            new_file.perm_to_display(&color_profile);
+            new_file.id_to_display(&color_profile);
+            new_file.size_to_display(&color_profile);
         }
-        */
+        if l_num > 1 {
+
+            if file.metadata()?.is_dir() {
+                new_file.get_children(&color_profile)?;
+
+                new_file.file_size = new_file.children.len() as u64;
+                new_file.display_file_unit = "F ".custom_color(color_profile.file_num).to_string();
+            }
+
+        }
+        
+
+        
 
         string_files.push(new_file);
     }
