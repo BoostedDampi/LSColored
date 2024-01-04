@@ -41,7 +41,7 @@ pub struct File {
     pub display_gid: String,
 
     pub file_size: u64,
-    pub display_file_unit: String, //only KB, MG, GB colored
+    pub display_file_unit: String, //only KB, MG, GB and F. Where F gets added in prepare_files()
 
     pub children: Vec<File>,
 }
