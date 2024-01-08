@@ -3,11 +3,9 @@ use std::process;
 use std::fs;
 use std::error::Error;
 use std::path::PathBuf;
-use colored::*;
-
-use lsc::ColorProfile;
 
 mod cli;
+use lsc::colors::ColorScheme;
 
 fn main() {
     
@@ -21,24 +19,31 @@ fn main() {
 
 pub fn run(args: Config) -> Result<(), Box<dyn Error>>{
 
-    let mut file_system = fs::read_dir(args.path)?;
+    let mut file_system = fs::read_dir(&args.path)?;
 
-    let color_profile = ColorProfile {dir: CustomColor {r: 33, g:158, b:188},
-                                                    sym_link: CustomColor {r:33, g:131, b:128},
-                                                    ex_file: CustomColor {r:255, g:183, b:3},
-                                                    other: CustomColor { r: 255, g: 255, b: 255},
-                                                    user_perm: CustomColor { r: 0, g: 121, b: 140 },
-                                                    group_perm: CustomColor { r: 209, g: 73, b: 91 },
-                                                    other_perm: CustomColor { r: 237, g: 174, b: 73 }, 
-                                                    user_name_perm: CustomColor { r: 0, g: 121, b: 140 },
-                                                    group_name_perm: CustomColor { r: 209, g: 73, b: 91 },
-                                                    kb: CustomColor { r: 173, g: 40, b: 49 },
-                                                    mb: CustomColor { r: 128, g: 14, b: 19 },
-                                                    gb: CustomColor { r: 100, g: 13, b: 20 },
-                                                    file_num: CustomColor { r: 100, g: 13, b: 20 }};
+    // Color init ---
+    let mut color_scheme: ColorScheme = ColorScheme::new();
 
-    let mut prepared_files = lsc::prepare_files(&mut file_system, !args.all_files, args.long_list, color_profile)?;
-    
+    color_scheme.add_rgb("dir".to_string(), 33, 158, 188);
+    color_scheme.add_rgb("sym_link".to_string(), 33, 131, 128);
+    color_scheme.add_rgb("ex_file".to_string(), 255, 183, 3);
+    color_scheme.add_rgb("other".to_string(), 255, 255, 255);
+
+    color_scheme.add_rgb("user_perm".to_string(), 0, 121, 140);
+    color_scheme.add_rgb("group_perm".to_string(), 209, 73, 91);
+    color_scheme.add_rgb("other_perm".to_string(), 237, 174, 73);
+    color_scheme.add_rgb("user_name_perm".to_string(), 0, 121, 140);
+    color_scheme.add_rgb("group_name_perm".to_string(), 209, 73, 91);
+
+    color_scheme.add_rgb("kb".to_string(), 173, 40, 49);
+    color_scheme.add_rgb("mb".to_string(), 128, 14, 19);
+    color_scheme.add_rgb("gb".to_string(), 100, 13, 20);
+
+    color_scheme.add_rgb("file_num".to_string(), 33, 158, 188);
+
+
+    //directory content to Vector of files
+    let mut prepared_files = lsc::prepare_files(&mut file_system, !args.all_files, args.long_list, color_scheme, &args.path)?;
     
     //Sorting of files, time complexity is n * log(n) worst case. I do not think it is needed to have an option to
     //remove sorting as it has minimal impact.
@@ -48,7 +53,6 @@ pub fn run(args: Config) -> Result<(), Box<dyn Error>>{
     else {
         prepared_files.sort_unstable_by_key(|file| file.name.chars().next().unwrap() as u32);
     }
-
 
     //output cli functions
     if args.long_list > 0 {

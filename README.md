@@ -13,7 +13,7 @@ To install LSColored, ensure you have Rust and Cargo 📦 installed on your mach
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/LSColored.git
+   git clone https://github.com/BoostedDampi/LSColored.git
    ```
 2. Change to the directory:
    ```sh
@@ -34,6 +34,10 @@ After installation, LSColored can be used similarly to the traditional `ls` comm
 - List files with detailed information:
   ```sh
   lsc -l
+  ```
+- List files with more detailed information:
+  ```sh
+  lsc -ll
   ```
 - Show hidden files:
   ```sh

@@ -3,7 +3,12 @@ use std::fs;
 use std::fs::{ReadDir, FileType, DirEntry};
 use std::os::linux::fs::MetadataExt;
 use colored::*;
+use colors::ColorScheme;
 use std::error::Error;
+
+pub mod colors;
+
+#[warn(clippy::collapsible_if)]
 
 pub struct ColorProfile {
     pub ex_file: CustomColor,
@@ -81,30 +86,36 @@ impl File {
     }
 
     //coloring name of file in function of its type
-    pub fn name_to_display(&mut self, color_profile: &ColorProfile) {
+    pub fn name_to_display(&mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
 
         let file_type = self.f_type;
 
         if file_type.is_dir() {
-            self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.dir)));
+            self.display_name.push_str(&color_scheme.parse_text("dir".to_string(), &self.name)?);
+            //self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.dir)));
             self.dn_len = self.name.len();
         } 
         else if file_type.is_symlink() {
-            self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.sym_link)));
+            //self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.sym_link)));
+            self.display_name.push_str(&color_scheme.parse_text("symlink".to_string(), &self.name)?);
             self.dn_len = self.name.len();
         }
         else if &self.permissions & 0o100 > 0 { //mode is the permission, color if executable
-            self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.ex_file)));
+            //self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.ex_file)));
+            self.display_name.push_str(&color_scheme.parse_text("ex_file".to_string(), &self.name)?);
             self.dn_len = self.name.len(); 
         }
         else {
-            self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.other)));
+            self.display_name.push_str(&color_scheme.parse_text("other".to_string(), &self.name)?);
+            //self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.other)));
             self.dn_len = self.name.len();
         }
+
+        Ok(())
     }
 
     //coloring rwxrwxrwx permissions for better understending
-    pub fn perm_to_display(&mut self, color_profile: &ColorProfile) {
+    pub fn perm_to_display(&mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
 
         let mut output = String::new();
 
@@ -116,15 +127,16 @@ impl File {
                                                                .collect();
         mask.reverse();
 
-        let perm = vec!["r".custom_color(color_profile.user_perm).to_string(),
-                                     "w".custom_color(color_profile.user_perm).to_string(),
-                                     "x".custom_color(color_profile.user_perm).to_string(),
-                                     "r".custom_color(color_profile.group_perm).to_string(),
-                                     "w".custom_color(color_profile.group_perm).to_string(),
-                                     "x".custom_color(color_profile.group_perm).to_string(),
-                                     "r".custom_color(color_profile.other_perm).to_string(),
-                                     "w".custom_color(color_profile.other_perm).to_string(),
-                                     "x".custom_color(color_profile.other_perm).to_string()];
+        let perm: Vec<String> = vec![color_scheme.parse_text("user_perm".to_string(), "r")?,
+                                     color_scheme.parse_text("user_perm".to_string(), "w")?,
+                                     color_scheme.parse_text("user_perm".to_string(), "w")?,
+                                     color_scheme.parse_text("group_perm".to_string(), "w")?,
+                                     color_scheme.parse_text("group_perm".to_string(), "w")?,
+                                     color_scheme.parse_text("group_perm".to_string(), "w")?,
+                                     color_scheme.parse_text("other_perm".to_string(), "w")?,
+                                     color_scheme.parse_text("other_perm".to_string(), "w")?,
+                                     color_scheme.parse_text("other_perm".to_string(), "w")?];
+
         
         
         for (perm, mask) in perm.iter().zip(mask) {
@@ -133,10 +145,13 @@ impl File {
 
         self.display_perm = output;
 
+        Ok(())
+
     }
 
     //user and group ids colored
-    pub fn id_to_display(& mut self, color_profile: &ColorProfile) {
+    pub fn id_to_display(& mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>>{
+        /* 
         self.display_uid = self.uid
                                 .to_string()
                                 .custom_color(color_profile.user_name_perm)
@@ -145,45 +160,56 @@ impl File {
                                 .to_string()
                                 .custom_color(color_profile.group_name_perm)
                                 .to_string();
+        */
+
+        self.display_uid = color_scheme.parse_text("user_perm".to_string(), &self.uid.to_string())?;
+        self.display_gid = color_scheme.parse_text("group_perm".to_string(), &self.uid.to_string())?;
+
+        Ok(())
     }
 
     //formating size and adding unit format in extra variable
-    pub fn size_to_display(& mut self, color_profile: &ColorProfile) {
+    pub fn size_to_display(& mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
         if self.file_size < 1000 {
             self.display_file_unit = "B ".to_string();
         }
         else if self.file_size < 1000000 {
             self.file_size /= 1000;
             //custom color returns it's own type, needs to be converted to String.
-            self.display_file_unit = "KB".custom_color(color_profile.kb).to_string();
+            self.display_file_unit = color_scheme.parse_text("kb".to_string(), "KB")?;
         }
         else if self.file_size < 1000000000 {
             self.file_size /= 1000000;
-            self.display_file_unit = "MB".custom_color(color_profile.mb).to_string();
+            self.display_file_unit = color_scheme.parse_text("mb".to_string(), "MB")?;
         }
         else {
             self.file_size /= 1000000000;
-            self.display_file_unit = "GB".to_string().custom_color(color_profile.gb).to_string();
+            self.display_file_unit = color_scheme.parse_text("gb".to_string(), "GB")?;
         }
+
+        Ok(())
     }
 
     //TODO
-    pub fn get_children(& mut self, color_profile: &ColorProfile) -> Result<(), Box<dyn Error>> {
-        let file_system = fs::read_dir(&self.name)?;
+    pub fn get_children(& mut self, color_scheme: &ColorScheme, path: &PathBuf) -> Result<(), Box<dyn Error>> {
+        
+        let mut path_to_folder = PathBuf::from(path);
+        path_to_folder.push(&self.name);
+
+        let file_system = fs::read_dir(path_to_folder)?;
 
         for file in file_system {
             let file = file?;
             let mut new_child = File::new_file(&file)?;
-            new_child.name_to_display(color_profile);
+            new_child.name_to_display(color_scheme)?;
             self.children.push(new_child);
         }
         
         //ignore hidden files if neccesary
-        //get number of children istead of file size
         Ok(())
     }
 
-    pub fn display_children(&mut self, color_profile: &ColorProfile) {
+    pub fn display_children(&mut self, _color_scheme: &ColorScheme) {
         //TODO
     }
 
@@ -192,11 +218,13 @@ impl File {
 //a lot of this could be moved into file::new_file() but in this way I can controll better wich functions
 //get executed and i don't have to create logic for get_children() recursion.
 
-pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, l_num: u8, color_profile: ColorProfile) -> Result<Vec<File>, Box<dyn Error>> {
+pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, l_num: u8, color_scheme: colors::ColorScheme, r_path: &PathBuf) -> Result<Vec<File>, Box<dyn Error>> {
     let mut string_files = vec![];
 
     for file in dir {
+
         let file = file?;
+
 
         //ignore hidden files if necesary
         let string_name = &file.file_name().to_string_lossy().to_string();
@@ -206,27 +234,23 @@ pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, l_num: u8, color_pr
 
         let mut new_file = File::new_file(&file)?;
 
-        new_file.name_to_display(&color_profile);
+        new_file.name_to_display(&color_scheme)?;
 
         if l_num > 0 { //if long option is selected
-            new_file.perm_to_display(&color_profile);
-            new_file.id_to_display(&color_profile);
-            new_file.size_to_display(&color_profile);
+            new_file.perm_to_display(&color_scheme)?;
+            new_file.id_to_display(&color_scheme)?;
+            new_file.size_to_display(&color_scheme)?;
         }
-        if l_num > 1 {
+        if l_num > 1 && file.metadata()?.is_dir(){
 
-            if file.metadata()?.is_dir() {
-                new_file.get_children(&color_profile)?;
 
-                new_file.file_size = new_file.children.len() as u64;
-                new_file.display_file_unit = "F ".custom_color(color_profile.file_num).to_string();
-            }
+            new_file.get_children( &color_scheme, r_path, )?;
+
+            new_file.file_size = new_file.children.len() as u64;
+            new_file.display_file_unit = color_scheme.parse_text("file_num".to_string(), "F ")?//"F ".custom_color(color_profile.file_num).to_string();
 
         }
         
-
-        
-
         string_files.push(new_file);
     }
 
