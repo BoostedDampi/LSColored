@@ -50,10 +50,10 @@ lsc --help
 ```
 
 ## ToDo 📝
-- **Better Color Profile Editing**: Implement more customizable color profiles for users to choose from.
-- **Files in Subfolders Listing**: Add an option to list files in subfolders recursively.
-- **Dynamic Directory Traversal**: Enable dynamic navigation through directories.
-- **More Metadata in Verbose Mode**: Display additional file metadata when using verbose mode.
+- **Better Color Profile Editing**: User editabele color profiles. (created library but have to evaluate performance)
+- **Files in Subfolders Listing**: Add an option to list files in subfolders recursively. [IN PROGRESS]
+- **Dynamic Directory Traversal**: Enable dynamic navigation through directories. [IN PLANNING]
+- **More Metadata in Verbose Mode**: Display additional file metadata when using verbose mode (-ll).
 - **Add Tests**: Add a series of tests for simplified development and updating.
 
 ## License
