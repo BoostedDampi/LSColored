@@ -43,7 +43,11 @@ pub fn run(args: Config) -> Result<(), Box<dyn Error>>{
 
 
     //directory content to Vector of files
-    let mut prepared_files = lsc::prepare_files(&mut file_system, !args.all_files, args.long_list, color_scheme, &args.path)?;
+    let mut prepared_files = lsc::prepare_files(&mut file_system, 
+                                                 !args.all_files, 
+                                                         args.long_list, color_scheme, 
+                                                        &args.path,
+                                                                args.number_subfolders)?;
     
     //Sorting of files, time complexity is n * log(n) worst case. I do not think it is needed to have an option to
     //remove sorting as it has minimal impact.
@@ -87,6 +91,10 @@ pub struct Config {
     #[clap(short, long)]
     ///Sort results per it's size
     pub sort_size: bool,
+
+    #[clap(short, default_value = "2")]
+    ///number of subfolders
+    pub number_subfolders: usize,
 
 }
 

@@ -1,3 +1,4 @@
+use core::num;
 use std::path::PathBuf;
 use std::fs;
 use std::fs::{ReadDir, FileType, DirEntry};
@@ -45,10 +46,11 @@ pub struct File {
     pub display_uid: String,
     pub display_gid: String,
 
-    pub file_size: u64,
+    pub file_size: i64,
     pub display_file_unit: String, //only KB, MG, GB and F. Where F gets added in prepare_files()
 
     pub children: Vec<File>,
+    pub display_children: Vec<String>,
 }
 
 
@@ -75,9 +77,10 @@ impl File {
                                         gid: meta.st_gid(),
                                         display_uid: String::new(),
                                         display_gid: String::new(),
-                                        file_size: meta.st_size(),
+                                        file_size: meta.st_size() as i64,
                                         display_file_unit: String::new(),
                                         children: Vec::new(),
+                                        display_children: Vec::new(),
                                     };
         
 
@@ -97,7 +100,7 @@ impl File {
         } 
         else if file_type.is_symlink() {
             //self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.sym_link)));
-            self.display_name.push_str(&color_scheme.parse_text("symlink".to_string(), &self.name)?);
+            self.display_name.push_str(&color_scheme.parse_text("sym_link".to_string(), &self.name)?);
             self.dn_len = self.name.len();
         }
         else if &self.permissions & 0o100 > 0 { //mode is the permission, color if executable
@@ -209,8 +212,22 @@ impl File {
         Ok(())
     }
 
-    pub fn display_children(&mut self, _color_scheme: &ColorScheme) {
-        //TODO
+    pub fn display_children(&mut self, num_of_children: usize) {
+        //self.children.sort_unstable_by_key(|file| file.file_size);
+        if self.children.len() == 1 {
+            self.display_children.push(format!("╚═══ {}", &self.children[0].display_name));
+        }
+        else if !self.children.is_empty(){
+            let limit = std::cmp::min(num_of_children, self.children.len());
+            dbg!(limit);
+
+            for n_child in 0..limit-1 {
+
+                self.display_children.push(format!("╠═══ {}\n", &self.children[n_child].display_name));
+            }
+            self.display_children.push(format!("╚═══ {}", &self.children[limit-1].display_name));
+
+        }   
     }
 
 }
@@ -218,7 +235,7 @@ impl File {
 //a lot of this could be moved into file::new_file() but in this way I can controll better wich functions
 //get executed and i don't have to create logic for get_children() recursion.
 
-pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, l_num: u8, color_scheme: colors::ColorScheme, r_path: &PathBuf) -> Result<Vec<File>, Box<dyn Error>> {
+pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, l_num: u8, color_scheme: colors::ColorScheme, r_path: &PathBuf, num_of_children: usize) -> Result<Vec<File>, Box<dyn Error>> {
     let mut string_files = vec![];
 
     for file in dir {
@@ -243,12 +260,14 @@ pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, l_num: u8, color_sc
         }
         if l_num > 1 && file.metadata()?.is_dir(){
 
-
-            new_file.get_children( &color_scheme, r_path, )?;
-
-            new_file.file_size = new_file.children.len() as u64;
-            new_file.display_file_unit = color_scheme.parse_text("file_num".to_string(), "F ")?//"F ".custom_color(color_profile.file_num).to_string();
-
+            new_file.file_size = -1;
+            if let Err(_err) = new_file.get_children( &color_scheme, r_path) {
+                
+            }
+            new_file.display_children(num_of_children);
+            new_file.file_size = new_file.children.len() as i64;
+            new_file.display_file_unit = color_scheme.parse_text("file_num".to_string(), "F ")?
+            
         }
         
         string_files.push(new_file);

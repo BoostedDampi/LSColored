@@ -50,11 +50,12 @@ lsc --help
 ```
 
 ## ToDo 📝
-- **Better Color Profile Editing**: User editabele color profiles. (created library but have to evaluate performance)
-- **Files in Subfolders Listing**: Add an option to list files in subfolders recursively. [IN PROGRESS]
+- **Better Color Profile Editing**: User editabele color profiles. [Updated color library, TOML color profile not yet implemented]
+- **Subfolders Listing**: Add an option to list files in subfolders recursively. [DONE but slow, needs improvements]
 - **Dynamic Directory Traversal**: Enable dynamic navigation through directories. [IN PLANNING]
 - **More Metadata in Verbose Mode**: Display additional file metadata when using verbose mode (-ll).
 - **Add Tests**: Add a series of tests for simplified development and updating.
+- **Better Error Handling**: I need better error handling in the code.
 
 ## License
 LSColored is released under the GNU GPLv3 License. See the [LICENSE](LICENSE) file for more details.

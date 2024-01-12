@@ -70,11 +70,21 @@ pub fn long_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
 
     output.push_str(&format!("Permissions {} {} Size    Name\n", u, g));
     for file in files.iter() {
+
         output.push_str(&format!("{}", &file.display_perm));
         output.push_str(&format!("   {:^uwidth$} {:^gwidth$}", file.display_uid, file.display_gid, uwidth = max_meta.max_uid_len, gwidth = max_meta.max_gid_len));
         output.push_str(&format!("  {:>width$} {}",&file.file_size, &file.display_file_unit, width = max_meta.max_size_len));
         output.push_str(&format!("  {}", &file.display_name));
+        
+        if file.f_type.is_dir() && !file.children.is_empty() {
+            output.push('\n');
+            for child_string in file.display_children.iter() {
+                output.push_str(&format!("                               {}", child_string));
+            }
+        }
+
         output.push('\n');
+        
     }
 
     Ok(output)
