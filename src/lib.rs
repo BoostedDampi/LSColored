@@ -66,7 +66,7 @@ impl File {
     }
 
     //coloring name of file in function of its type
-    pub fn name_to_display(&mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
+    fn name_to_display(&mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
 
         let file_type = self.f_type;
 
@@ -95,7 +95,7 @@ impl File {
     }
 
     //coloring rwxrwxrwx permissions for better understending
-    pub fn perm_to_display(&mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
+    fn perm_to_display(&mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
 
         let mut output = String::new();
 
@@ -130,7 +130,7 @@ impl File {
     }
 
     //user and group ids colored
-    pub fn id_to_display(& mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>>{
+    fn id_to_display(& mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>>{
         /* 
         self.display_uid = self.uid
                                 .to_string()
@@ -149,7 +149,7 @@ impl File {
     }
 
     //formating size and adding unit format in extra variable
-    pub fn size_to_display(& mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
+    fn size_to_display(& mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
         if self.file_size < 1000 {
             self.display_file_unit = "B ".to_string();
         }
@@ -170,8 +170,7 @@ impl File {
         Ok(())
     }
 
-    //TODO
-    pub fn get_children(& mut self, color_scheme: &ColorScheme, path: &PathBuf, num_of_children: usize) -> Result<(), Box<dyn Error>> {
+    fn get_children(& mut self, color_scheme: &ColorScheme, path: &PathBuf, num_of_children: usize) -> Result<(), Box<dyn Error>> {
 
         let mut path_to_folder = PathBuf::from(path);
         path_to_folder.push(&self.name);
@@ -217,16 +216,6 @@ impl File {
 
         Ok(())
     }
-
-    pub fn display_children(&mut self) {
-        //self.children.sort_unstable_by_key(|file| file.file_size);
-        if !self.children.is_empty() {
-            for child in self.children.iter_mut() {
-                child.display_name = format!("  ╠═══ {}", &child.display_name);
-            }
-        }   
-    }
-
 }
 
 //a lot of this could be moved into file::new_file() but in this way I can controll better wich functions

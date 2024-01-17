@@ -106,7 +106,8 @@ fn file_to_string (file: &File, max_meta: &MaxMetadata) -> String {
 
     //i'm gonna argue that no one in his sane mind is going to have more then 9999 users on a computer. 
     //if you find someone please contact me and i'm gonna fix it.
-    buffer.push_str(&format!(" {:^uwidth$} {:^gwidth$} ", file.display_uid, file.display_gid, uwidth = 4+21, gwidth = 4+22));
+    dbg!(max_meta.max_uid_len);
+    buffer.push_str(&format!(" {:^uwidth$} {:^gwidth$} ", file.display_uid, file.display_gid, uwidth = cmp::max(max_meta.max_uid_len, 25), gwidth = cmp::max(max_meta.max_gid_len, 25)));
     
     buffer.push_str(&format!("{:>lenght$} {}", file.file_size, file.display_file_unit, lenght=max_meta.max_size_len));
     buffer.push_str(&format!("  {}", file.display_name));
@@ -119,7 +120,7 @@ pub fn long_output_vec (files: &Vec<File>) -> Result<String, Box<dyn Error>> {
 
     let max_meta = MaxMetadata::new(files);
 
-    output.push(format!("Permissions User Group  Size   Name"));
+    output.push(format!("Permissions {:<uwidth$} Group  Size   Name", "User", uwidth = cmp::max(4, max_meta.max_gid_len-21)));
 
     //populating files
     for file in files.iter() {

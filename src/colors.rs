@@ -11,7 +11,7 @@ pub enum Color {
 impl Color {
 
     //i need rgb values for the colored create, so i convert them
-    pub fn convert(&self) -> Option<(u8, u8, u8)> {
+    fn convert(&self) -> Option<(u8, u8, u8)> {
         match self {
             Color::RGB { r, g, b } => Some((*r, *g, *b)),
 

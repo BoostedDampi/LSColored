@@ -1,12 +1,14 @@
 # 📁 LSColored 🌈
 
 ## Introduction
-Welcome to LSColored, a custom implementation of the traditional `ls` command written in Rust 🦀. This project was developed as a fun and educational journey into Rust programming. It replicates the functionality of the classic directory listing command but also introduces improved colored output 🎨 and several additional features to enhance the user experience.
+Welcome to LSColored, a custom implementation of the traditional `ls` command written in Rust 🦀. This project is being developed as a fun and educational journey into Rust programming. It replicates the functionality of the classic directory listing command but also introduces improved colored output 🎨 and several additional features to enhance the user experience. I'm adding features I think are useful and ignoring others, so do not expect a perfect `ls` copy.
 
 ## Features
 - **Enhanced Colored Output**: Utilizes a rich color palette to distinguish file types, permissions, and other attributes.
-- **Additional Listing Options**: Includes new flags and parameters to customize the directory listing.
+- **Additional Listing Options**: Includes different flags and parameters to customize the directory listing.
 - **User-Friendly Interface**: Improved readability and user interaction.
+- **Recursive Folder Listing**: Using the -ll flag it is possible to see a limited amount of subfolders and files.
+- **Faster then ls**: If you are not trying to recursivly list root, lsc is around 1ms faster then ls.
 
 ## Installation
 To install LSColored, ensure you have Rust and Cargo 📦 installed on your machine. Follow these steps:
@@ -51,7 +53,6 @@ lsc --help
 
 ## ToDo 📝
 - **Better Color Profile Editing**: User editabele color profiles. [Updated color library, TOML color profile not yet implemented]
-- **Subfolders Listing**: Add an option to list files in subfolders recursively. [DONE but slow, needs improvements]
 - **Dynamic Directory Traversal**: Enable dynamic navigation through directories. [IN PLANNING]
 - **More Metadata in Verbose Mode**: Display additional file metadata when using verbose mode (-ll).
 - **Add Tests**: Add a series of tests for simplified development and updating.
