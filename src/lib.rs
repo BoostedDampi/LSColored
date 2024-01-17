@@ -172,31 +172,39 @@ impl File {
 
     //TODO
     pub fn get_children(& mut self, color_scheme: &ColorScheme, path: &PathBuf, num_of_children: usize) -> Result<(), Box<dyn Error>> {
-        
+
         let mut path_to_folder = PathBuf::from(path);
         path_to_folder.push(&self.name);
 
-        let file_system = match fs::read_dir(path_to_folder) {
+        let mut file_system = match fs::read_dir(path_to_folder) {
             Ok(ok) => ok,
             Err(err) => {
                 self.file_size = -1;
                 return Err(Box::new(err))
             }
-        };
+        }.peekable();
 
         self.file_size = 0;//here i need to get the number of elements in the iterator
-
-        for (num, file) in file_system.enumerate() {
+        while let Some(file) = file_system.next() {
             
-            self.file_size = num as i64 + 1;
-                
-            if num < num_of_children {
+            self.file_size += 1;
+
+
+            if self.file_size <= num_of_children as i64 {
+
                 let file = file?;
                 let mut new_child = File::new_file(&file)?;
 
                 new_child.name_to_display(color_scheme)?;
+
                 
-                new_child.display_name = format!("  ╠═══ {}", &new_child.display_name);
+                if self.file_size == num_of_children as i64 || file_system.peek().is_none()  {
+
+                    new_child.display_name = format!("  ╚═══ {}", &new_child.display_name);
+                } else {
+                
+                    new_child.display_name = format!("  ╠═══ {}", &new_child.display_name);
+                }
 
                 new_child.perm_to_display(color_scheme)?;
                 new_child.id_to_display(color_scheme)?;

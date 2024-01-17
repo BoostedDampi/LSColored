@@ -1,6 +1,28 @@
 use lsc::File;
 use std::error::Error;
 use std::cmp;
+use termsize;
+
+
+pub fn normal_output_new (files: Vec<File>) -> Result<String, Box<dyn Error>> {
+
+    let mut output = String::new();
+
+    //in case that this is not a tty we put every file in distinct lines
+    let max_col = match termsize::get() {
+        Some(some) => some.cols,
+        None => 1
+    };
+
+    
+
+
+
+
+
+
+    Ok(output)
+}
 
 //normal output ls -a or ls
 pub fn normal_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
@@ -11,7 +33,9 @@ pub fn normal_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
 
     //Saves for every col the size of the biggest string
     let mut col_width: Vec<usize> = vec![];
+
     for col in 0..num_col {
+
         let mut current_max = 0;
         for elem in (col..files.len()).step_by(num_col) {
             if files[elem].dn_len > current_max {
@@ -73,46 +97,6 @@ impl MaxMetadata {
     }
 }
 
-//long autput lsc -l or lsc -la
-pub fn long_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
-    let mut output = String::new();
-
-    //get max of metadatas for whitespace padding
-    let max_meta = MaxMetadata::new(files);
-    
-    //TODO i have to check if 0 is 22 chars long even in the color codes change
-    let u = if max_meta.max_uid_len == 22 {"U"} else {"User"};
-    let g = if max_meta.max_uid_len == 22 {"G  "} else {"Group"};
-
-    output.push_str(&format!("Permissions User Group Size    Name\n"));
-    for file in files.iter() {
-        let mut buffer: String = String::new(); 
-
-        buffer.push_str(&format!("{}", &file.display_perm));
-        buffer.push_str(&format!("{:^uwidth$} {:^gwidth$}", file.display_uid, file.display_gid, uwidth = &file.display_uid.len()+6, gwidth = &file.display_uid.len()));
-        buffer.push_str(&format!("  {:>width$} {}",&file.file_size, &file.display_file_unit, width = max_meta.max_size_len));
-        buffer.push_str(&format!("  {}", &file.display_name));
-        
-        //TODO this part can be rewritten, remember that in some cases the user and groups get turned into U and G
-        
-        if file.f_type.is_dir() && !file.children.is_empty() {
-            let buffer_size: usize = buffer.chars().collect::<Vec<char>>().len();
-            
-            buffer.push('\n');
-            for child_string in file.display_children.iter() {
-                //buffer.push_str(&format!("                               {}", child_string));
-                buffer.push_str(&format!("{:>lenght$}", child_string, lenght = buffer_size));
-            }
-        }
-
-        buffer.push('\n');
-
-        output.push_str(&buffer);
-        
-    }
-
-    Ok(output)
-}
 
 fn file_to_string (file: &File, max_meta: &MaxMetadata) -> String {
 
