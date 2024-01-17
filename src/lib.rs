@@ -1,35 +1,12 @@
-use core::num;
 use std::path::PathBuf;
 use std::fs;
 use std::fs::{ReadDir, FileType, DirEntry};
 use std::os::linux::fs::MetadataExt;
-use colored::*;
-use colors::ColorScheme;
 use std::error::Error;
 
 pub mod colors;
+use colors::ColorScheme;
 
-#[warn(clippy::collapsible_if)]
-
-pub struct ColorProfile {
-    pub ex_file: CustomColor,
-    pub sym_link: CustomColor,
-    pub dir: CustomColor,
-    pub other: CustomColor,
-
-    pub user_perm: CustomColor,
-    pub group_perm: CustomColor,
-    pub other_perm: CustomColor,
-
-    pub user_name_perm: CustomColor,
-    pub group_name_perm: CustomColor,
-
-    pub kb: CustomColor,
-    pub mb: CustomColor,
-    pub gb: CustomColor,
-    pub file_num: CustomColor,
-
-}
 pub struct File {
     pub path: PathBuf,
 
@@ -132,13 +109,13 @@ impl File {
 
         let perm: Vec<String> = vec![color_scheme.parse_text("user_perm".to_string(), "r")?,
                                      color_scheme.parse_text("user_perm".to_string(), "w")?,
-                                     color_scheme.parse_text("user_perm".to_string(), "w")?,
+                                     color_scheme.parse_text("user_perm".to_string(), "x")?,
+                                     color_scheme.parse_text("group_perm".to_string(), "r")?,
                                      color_scheme.parse_text("group_perm".to_string(), "w")?,
-                                     color_scheme.parse_text("group_perm".to_string(), "w")?,
-                                     color_scheme.parse_text("group_perm".to_string(), "w")?,
+                                     color_scheme.parse_text("group_perm".to_string(), "x")?,
+                                     color_scheme.parse_text("other_perm".to_string(), "r")?,
                                      color_scheme.parse_text("other_perm".to_string(), "w")?,
-                                     color_scheme.parse_text("other_perm".to_string(), "w")?,
-                                     color_scheme.parse_text("other_perm".to_string(), "w")?];
+                                     color_scheme.parse_text("other_perm".to_string(), "x")?];
 
         
         
@@ -194,39 +171,51 @@ impl File {
     }
 
     //TODO
-    pub fn get_children(& mut self, color_scheme: &ColorScheme, path: &PathBuf) -> Result<(), Box<dyn Error>> {
+    pub fn get_children(& mut self, color_scheme: &ColorScheme, path: &PathBuf, num_of_children: usize) -> Result<(), Box<dyn Error>> {
         
         let mut path_to_folder = PathBuf::from(path);
         path_to_folder.push(&self.name);
 
-        let file_system = fs::read_dir(path_to_folder)?;
+        let file_system = match fs::read_dir(path_to_folder) {
+            Ok(ok) => ok,
+            Err(err) => {
+                self.file_size = -1;
+                return Err(Box::new(err))
+            }
+        };
 
-        for file in file_system {
-            let file = file?;
-            let mut new_child = File::new_file(&file)?;
-            new_child.name_to_display(color_scheme)?;
-            self.children.push(new_child);
+        self.file_size = 0;//here i need to get the number of elements in the iterator
+
+        for (num, file) in file_system.enumerate() {
+            
+            self.file_size = num as i64 + 1;
+                
+            if num < num_of_children {
+                let file = file?;
+                let mut new_child = File::new_file(&file)?;
+
+                new_child.name_to_display(color_scheme)?;
+                
+                new_child.display_name = format!("  ╠═══ {}", &new_child.display_name);
+
+                new_child.perm_to_display(color_scheme)?;
+                new_child.id_to_display(color_scheme)?;
+                new_child.size_to_display(color_scheme)?;
+                self.children.push(new_child);
+            }
         }
-        
-        //ignore hidden files if neccesary
+        //self.children[self.children.len()-1].display_name =  format!("  ╚═══ {}", &self.children[self.children.len()-1].display_name);
+
+
         Ok(())
     }
 
-    pub fn display_children(&mut self, num_of_children: usize) {
+    pub fn display_children(&mut self) {
         //self.children.sort_unstable_by_key(|file| file.file_size);
-        if self.children.len() == 1 {
-            self.display_children.push(format!("╚═══ {}", &self.children[0].display_name));
-        }
-        else if !self.children.is_empty(){
-            let limit = std::cmp::min(num_of_children, self.children.len());
-            dbg!(limit);
-
-            for n_child in 0..limit-1 {
-
-                self.display_children.push(format!("╠═══ {}\n", &self.children[n_child].display_name));
+        if !self.children.is_empty() {
+            for child in self.children.iter_mut() {
+                child.display_name = format!("  ╠═══ {}", &child.display_name);
             }
-            self.display_children.push(format!("╚═══ {}", &self.children[limit-1].display_name));
-
         }   
     }
 
@@ -260,12 +249,11 @@ pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, l_num: u8, color_sc
         }
         if l_num > 1 && file.metadata()?.is_dir(){
 
-            new_file.file_size = -1;
-            if let Err(_err) = new_file.get_children( &color_scheme, r_path) {
+            if let Err(_err) = new_file.get_children( &color_scheme, r_path, num_of_children) {
                 
             }
-            new_file.display_children(num_of_children);
-            new_file.file_size = new_file.children.len() as i64;
+            //new_file.display_children();
+            //new_file.file_size = new_file.children.len() as i64;
             new_file.display_file_unit = color_scheme.parse_text("file_num".to_string(), "F ")?
             
         }

@@ -60,7 +60,7 @@ pub fn run(args: Config) -> Result<(), Box<dyn Error>>{
 
     //output cli functions
     if args.long_list > 0 {
-        println!("{}", cli::long_output(&prepared_files)?);
+        println!("{}", cli::long_output_vec(&prepared_files)?);
     }
     else {
         println!("{}", cli::normal_output(&prepared_files)?);
