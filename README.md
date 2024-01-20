@@ -8,7 +8,7 @@ Welcome to LSColored, a custom implementation of the traditional `ls` command wr
 - **Additional Listing Options**: Includes different flags and parameters to customize the directory listing.
 - **User-Friendly Interface**: Improved readability and user interaction.
 - **Recursive Folder Listing**: Using the -ll flag it is possible to see a limited amount of subfolders and files.
-- **Faster then ls**: If you are not trying to recursivly list root, lsc is around 1ms faster then ls.
+- **Faster than ls**: If you are not trying to recursivly list root, lsc is around 1ms faster then `ls`.
 
 ## Installation
 To install LSColored, ensure you have Rust and Cargo 📦 installed on your machine. Follow these steps:
