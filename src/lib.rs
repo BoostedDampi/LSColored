@@ -73,7 +73,7 @@ impl File {
 
         if file_type.is_dir() {
             self.display_name.push_str(&color_scheme.parse_text("dir".to_string(), &self.name)?);
-            //self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.dir)));
+            //self.display_name.push_str(&for9mat!("{}", self.name.custom_color(color_profile.dir)));
             self.dn_len = self.name.len();
         } 
         else if file_type.is_symlink() {
@@ -91,7 +91,6 @@ impl File {
             //self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.other)));
             self.dn_len = self.name.len();
         }
-
         Ok(())
     }
 

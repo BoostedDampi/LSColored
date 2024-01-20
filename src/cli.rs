@@ -1,12 +1,10 @@
 use lsc::File;
+use core::num;
 use std::error::Error;
 use std::cmp;
 use termsize;
 
-
-pub fn normal_output_new (files: Vec<File>) -> Result<String, Box<dyn Error>> {
-
-    let mut output = String::new();
+pub fn get_collumns (files: &Vec<File>) -> Result<usize, Box<dyn Error>> {
 
     //in case that this is not a tty we put every file in distinct lines
     let max_col = match termsize::get() {
@@ -14,14 +12,18 @@ pub fn normal_output_new (files: Vec<File>) -> Result<String, Box<dyn Error>> {
         None => 1
     };
 
-    
+    let mut total_lenght = 0;
+    for file in files {
+        total_lenght += file.dn_len+2;
+    }
+    if total_lenght < max_col as usize {
+        return Ok(files.len());
+    }
 
 
+    //TODO: MORE LOGIC
 
-
-
-
-    Ok(output)
+    Ok(4)
 }
 
 //normal output ls -a or ls
@@ -29,7 +31,8 @@ pub fn normal_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
 
     let mut output = String::new();
 
-    let num_col: usize = 4; //TODO this needs logic
+    let num_col: usize = get_collumns(files)?; //TODO this needs logic
+    dbg!(num_col);
 
     //Saves for every col the size of the biggest string
     let mut col_width: Vec<usize> = vec![];
@@ -104,9 +107,6 @@ fn file_to_string (file: &File, max_meta: &MaxMetadata) -> String {
 
     buffer.push_str(&format!("{}  ", file.display_perm));
 
-    //i'm gonna argue that no one in his sane mind is going to have more then 9999 users on a computer. 
-    //if you find someone please contact me and i'm gonna fix it.
-    dbg!(max_meta.max_uid_len);
     buffer.push_str(&format!(" {:^uwidth$} {:^gwidth$} ", file.display_uid, file.display_gid, uwidth = cmp::max(max_meta.max_uid_len, 25), gwidth = cmp::max(max_meta.max_gid_len, 25)));
     
     buffer.push_str(&format!("{:>lenght$} {}", file.file_size, file.display_file_unit, lenght=max_meta.max_size_len));
