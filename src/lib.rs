@@ -23,7 +23,7 @@ pub struct File {
     pub display_uid: String,
     pub display_gid: String,
 
-    pub file_size: i64,
+    pub file_size: i64, //can be the size, number of files or -1 if lsc has no access
     pub display_file_unit: String, //only KB, MG, GB and F. Where F gets added in prepare_files()
 
     pub children: Vec<File>,
@@ -43,6 +43,7 @@ impl File {
         //non utf characters, after that i convert it into a String.
         let string_name = file.file_name().to_string_lossy().to_string();
 
+        //TODO move some toDisplay here if they are not too slow
         let new_file =File{path: file.path(), 
                                         name: string_name,
                                         display_name: String::new(),
@@ -130,17 +131,8 @@ impl File {
     }
 
     //user and group ids colored
+    //TODO add usernames instead of ids
     fn id_to_display(& mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>>{
-        /* 
-        self.display_uid = self.uid
-                                .to_string()
-                                .custom_color(color_profile.user_name_perm)
-                                .to_string();
-        self.display_gid = self.gid
-                                .to_string()
-                                .custom_color(color_profile.group_name_perm)
-                                .to_string();
-        */
 
         self.display_uid = color_scheme.parse_text("user_perm".to_string(), &self.uid.to_string())?;
         self.display_gid = color_scheme.parse_text("group_perm".to_string(), &self.uid.to_string())?;
@@ -220,7 +212,7 @@ impl File {
 
 //a lot of this could be moved into file::new_file() but in this way I can controll better wich functions
 //get executed and i don't have to create logic for get_children() recursion.
-
+//TODO Is there a way to clean this mess?
 pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, l_num: u8, color_scheme: colors::ColorScheme, r_path: &PathBuf, num_of_children: usize) -> Result<Vec<File>, Box<dyn Error>> {
     let mut string_files = vec![];
 

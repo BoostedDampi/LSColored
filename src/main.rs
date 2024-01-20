@@ -71,7 +71,7 @@ pub fn run(args: Config) -> Result<(), Box<dyn Error>>{
 
 
 #[derive(Parser,Default,Debug)]
-#[clap(author="David Hermes", version="0.3", 
+#[clap(author="David Hermes", version="0.5", 
     about="LSColored is a Rust implementation of the ls command", 
     long_about="A Rust-based directory listing utility featuring vibrant colored output and additional user-friendly features, crafted during my learning journey in Rust programming.")]
 pub struct Config {

@@ -49,6 +49,8 @@ impl ColorScheme {
         let (r, g, b) = self.colors.get(&elem_name).unwrap().convert().unwrap();
         Ok(format!("{}", text.truecolor(r, g, b)))
     }
+
+    //TODO import from TOML file, problem is i do not know how slow permanent file reads are 
 }
 
 impl Default for ColorScheme {
