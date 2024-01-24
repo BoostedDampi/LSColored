@@ -1,38 +1,49 @@
 use lsc::File;
-use core::num;
 use std::error::Error;
 use std::cmp;
 use termsize;
 
-pub fn get_collumns (files: &Vec<File>) -> Result<usize, Box<dyn Error>> {
+pub fn get_columns (files: &Vec<File>) -> Result<usize, Box<dyn Error>> {
 
     //in case that this is not a tty we put every file in distinct lines
     let max_col = match termsize::get() {
         Some(some) => some.cols,
         None => 1
     };
+    dbg!(max_col);
 
-    let mut total_lenght = 0;
+    let mut total_lenght: Vec<usize> = Vec::new();
     for file in files {
-        total_lenght += file.dn_len+2;
+        total_lenght.push(file.dn_len + 2);
     }
-    if total_lenght < max_col as usize {
-        return Ok(files.len());
+    total_lenght.sort_unstable();
+    total_lenght.reverse();
+
+    let mut columns = 0;
+    let mut counter = 0;
+
+    for l in total_lenght {
+        counter += l;
+        if counter < max_col as usize {
+            columns += 1;
+        }
+        else {
+            dbg!("break", counter);
+            break;
+        }
     }
+    columns = cmp::max(1, columns);
 
-
-    //TODO: MORE LOGIC
-
-    Ok(4)
+    Ok(columns)
 }
+
 
 //normal output ls -a or ls
 pub fn normal_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
 
     let mut output = String::new();
 
-    let num_col: usize = get_collumns(files)?; //TODO this needs logic
-    dbg!(num_col);
+    let num_col: usize = get_columns(files)?; //TODO this needs logic
 
     //Saves for every col the size of the biggest string
     let mut col_width: Vec<usize> = vec![];
