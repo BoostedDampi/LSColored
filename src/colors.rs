@@ -33,6 +33,7 @@ impl Color {
 pub struct ColorScheme {
 
     pub colors: HashMap<String, Color>,
+
 }
 impl ColorScheme {
 
@@ -43,7 +44,6 @@ impl ColorScheme {
     pub fn add_rgb(&mut self, elem_name: String, r:u8, g:u8, b:u8) {
         self.colors.insert(elem_name, Color::RGB { r, g, b });
     }
-
 
     pub fn parse_text(&self, elem_name: String, text: &str) -> Result<String, Box<dyn Error>> {
         let (r, g, b) = self.colors.get(&elem_name).unwrap().convert().unwrap();

@@ -10,7 +10,6 @@ pub fn get_columns (files: &Vec<File>) -> Result<usize, Box<dyn Error>> {
         Some(some) => some.cols,
         None => 1
     };
-    dbg!(max_col);
 
     let mut total_lenght: Vec<usize> = Vec::new();
     for file in files {
@@ -28,12 +27,10 @@ pub fn get_columns (files: &Vec<File>) -> Result<usize, Box<dyn Error>> {
             columns += 1;
         }
         else {
-            dbg!("break", counter);
             break;
         }
     }
     columns = cmp::max(1, columns);
-
     Ok(columns)
 }
 
@@ -67,7 +64,6 @@ pub fn normal_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
             output.push('\n');
         }
     }
-
     Ok(output)
 }
 

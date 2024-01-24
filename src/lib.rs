@@ -73,22 +73,18 @@ impl File {
 
         if file_type.is_dir() {
             self.display_name.push_str(&color_scheme.parse_text("dir".to_string(), &self.name)?);
-            //self.display_name.push_str(&for9mat!("{}", self.name.custom_color(color_profile.dir)));
             self.dn_len = self.name.len();
         } 
         else if file_type.is_symlink() {
-            //self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.sym_link)));
             self.display_name.push_str(&color_scheme.parse_text("sym_link".to_string(), &self.name)?);
             self.dn_len = self.name.len();
         }
         else if &self.permissions & 0o100 > 0 { //mode is the permission, color if executable
-            //self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.ex_file)));
             self.display_name.push_str(&color_scheme.parse_text("ex_file".to_string(), &self.name)?);
             self.dn_len = self.name.len(); 
         }
         else {
             self.display_name.push_str(&color_scheme.parse_text("other".to_string(), &self.name)?);
-            //self.display_name.push_str(&format!("{}", self.name.custom_color(color_profile.other)));
             self.dn_len = self.name.len();
         }
         Ok(())
@@ -117,8 +113,6 @@ impl File {
                                      color_scheme.parse_text("other_perm".to_string(), "w")?,
                                      color_scheme.parse_text("other_perm".to_string(), "x")?];
 
-        
-        
         for (perm, mask) in perm.iter().zip(mask) {
             output.push_str(if mask=='1' {perm} else {"-"});
         }
@@ -179,15 +173,13 @@ impl File {
             
             self.file_size += 1;
 
-
             if self.file_size <= num_of_children as i64 {
 
                 let file = file?;
                 let mut new_child = File::new_file(&file)?;
 
                 new_child.name_to_display(color_scheme)?;
-
-                
+        
                 if self.file_size == num_of_children as i64 || file_system.peek().is_none()  {
 
                     new_child.display_name = format!("  ╚═══ {}", &new_child.display_name);
@@ -202,9 +194,6 @@ impl File {
                 self.children.push(new_child);
             }
         }
-        //self.children[self.children.len()-1].display_name =  format!("  ╚═══ {}", &self.children[self.children.len()-1].display_name);
-
-
         Ok(())
     }
 }
@@ -218,7 +207,6 @@ pub fn prepare_files(dir: &mut ReadDir, remove_hidden: bool, l_num: u8, color_sc
     for file in dir {
 
         let file = file?;
-
 
         //ignore hidden files if necesary
         let string_name = &file.file_name().to_string_lossy().to_string();
