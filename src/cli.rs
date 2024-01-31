@@ -11,6 +11,7 @@ pub fn get_columns (files: &Vec<File>) -> Result<usize, Box<dyn Error>> {
         None => 1
     };
 
+    //creating an array of all the name lenghts and sorting them.
     let mut total_lenght: Vec<usize> = Vec::new();
     for file in files {
         total_lenght.push(file.dn_len + 2);
@@ -18,18 +19,17 @@ pub fn get_columns (files: &Vec<File>) -> Result<usize, Box<dyn Error>> {
     total_lenght.sort_unstable();
     total_lenght.reverse();
 
+    //finding number of colum
     let mut columns = 0;
     let mut counter = 0;
-
     for l in total_lenght {
         counter += l;
         if counter < max_col as usize {
             columns += 1;
         }
-        else {
-            break;
-        }
+        else {break}
     }
+
     columns = cmp::max(1, columns);
     Ok(columns)
 }
@@ -59,11 +59,13 @@ pub fn normal_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
     //prints the string
     for (n_elem, file) in files.iter().enumerate() {
         // we add another two spaces of padding and extra padding to account for ANSI Escape characters
-        output.push_str(&format!("{:<width$}", file.display_name, width = col_width[n_elem%num_col]+2+file.display_name.len()-file.dn_len)); 
-        if (n_elem+1)%num_col == 0 {
-            output.push('\n');
-        }
+        let padding = col_width[n_elem%num_col]+2+file.display_name.len()-file.dn_len;
+        output.push_str(&format!("{:<width$}", file.display_name, width = padding));
+
+        //the plus one is there becouse enumerate starts from 0
+        if (n_elem+1)%num_col == 0 && n_elem+1 < files.len() {output.push('\n')}
     }
+
     Ok(output)
 }
 

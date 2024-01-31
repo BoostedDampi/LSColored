@@ -70,26 +70,19 @@ impl File {
     fn name_to_display(&mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
 
         let file_type = self.f_type;
+        
+        let file_type_desc = if file_type.is_dir() {"dir"}
+                            else if file_type.is_symlink() {"sym_link"}
+                            else if &self.permissions & 0o100 > 0 {"ex_file"}
+                            else {"other"};
 
-        if file_type.is_dir() {
-            self.display_name.push_str(&color_scheme.parse_text("dir".to_string(), &self.name)?);
-            self.dn_len = self.name.len();
-        } 
-        else if file_type.is_symlink() {
-            self.display_name.push_str(&color_scheme.parse_text("sym_link".to_string(), &self.name)?);
-            self.dn_len = self.name.len();
-        }
-        else if &self.permissions & 0o100 > 0 { //mode is the permission, color if executable
-            self.display_name.push_str(&color_scheme.parse_text("ex_file".to_string(), &self.name)?);
-            self.dn_len = self.name.len(); 
-        }
-        else {
-            self.display_name.push_str(&color_scheme.parse_text("other".to_string(), &self.name)?);
-            self.dn_len = self.name.len();
-        }
+        self.display_name.push_str(&color_scheme.parse_text(file_type_desc.to_string(), &self.name)?);
+        self.dn_len = self.name.len();
+            
         Ok(())
     }
 
+    //TODO Can me remade with a bit mask like Oo400, Oo200, ...
     //coloring rwxrwxrwx permissions for better understending
     fn perm_to_display(&mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
 
