@@ -82,39 +82,35 @@ impl File {
         Ok(())
     }
 
-    //TODO Can me remade with a bit mask like Oo400, Oo200, ...
-    //coloring rwxrwxrwx permissions for better understending
+
     fn perm_to_display(&mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
+
+        let labels = vec![("user_perm", "r", 0o400),
+                        ("user_perm", "w", 0o200),
+                        ("user_perm", "x", 0o100),
+                        ("group_perm", "r", 0o040),
+                        ("group_perm", "w", 0o020),
+                        ("group_perm", "x", 0o010),
+                        ("other_perm", "r", 0o004),
+                        ("other_perm", "w", 0o002),
+                        ("other_perm", "x", 0o001)];
 
         let mut output = String::new();
 
-        //the octal value if converted to binary returns this result 1000000rwxrwxrwx.
-        //the lenght of the first part is between 6-7 bits.
-        let mut mask: Vec<char> = format!("{:b}", self.permissions).chars()
-                                                               .rev()
-                                                               .take(9)
-                                                               .collect();
-        mask.reverse();
-
-        let perm: Vec<String> = vec![color_scheme.parse_text("user_perm".to_string(), "r")?,
-                                     color_scheme.parse_text("user_perm".to_string(), "w")?,
-                                     color_scheme.parse_text("user_perm".to_string(), "x")?,
-                                     color_scheme.parse_text("group_perm".to_string(), "r")?,
-                                     color_scheme.parse_text("group_perm".to_string(), "w")?,
-                                     color_scheme.parse_text("group_perm".to_string(), "x")?,
-                                     color_scheme.parse_text("other_perm".to_string(), "r")?,
-                                     color_scheme.parse_text("other_perm".to_string(), "w")?,
-                                     color_scheme.parse_text("other_perm".to_string(), "x")?];
-
-        for (perm, mask) in perm.iter().zip(mask) {
-            output.push_str(if mask=='1' {perm} else {"-"});
+        for label in labels {
+            if self.permissions & label.2 > 0 {
+                output.push_str(&color_scheme.parse_text(label.0.to_string(), label.1)?);
+            }
+            else {
+                output.push('-');
+            }
         }
 
         self.display_perm = output;
 
         Ok(())
-
     }
+
 
     //user and group ids colored
     //TODO add usernames instead of ids
