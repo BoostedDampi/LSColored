@@ -17,6 +17,10 @@ fn main() {
     }
 }
 
+
+
+
+
 pub fn run(args: Config) -> Result<(), Box<dyn Error>>{
 
     let mut file_system = fs::read_dir(&args.path)?;
@@ -35,9 +39,10 @@ pub fn run(args: Config) -> Result<(), Box<dyn Error>>{
     color_scheme.add_rgb("user_name_perm".to_string(), 0, 121, 140);
     color_scheme.add_rgb("group_name_perm".to_string(), 209, 73, 91);
 
-    color_scheme.add_rgb("kb".to_string(), 173, 40, 49);
-    color_scheme.add_rgb("mb".to_string(), 128, 14, 19);
-    color_scheme.add_rgb("gb".to_string(), 100, 13, 20);
+    color_scheme.add_rgb("B".to_string(),  200, 200, 200);
+    color_scheme.add_rgb("KB".to_string(), 173, 40, 49);
+    color_scheme.add_rgb("MB".to_string(), 128, 14, 19);
+    color_scheme.add_rgb("GB".to_string(), 100, 13, 20);
 
     color_scheme.add_rgb("file_num".to_string(), 33, 158, 188);
 

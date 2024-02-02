@@ -122,25 +122,31 @@ impl File {
         Ok(())
     }
 
-    //formating size and adding unit format in extra variable
-    fn size_to_display(& mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
-        if self.file_size < 1000 {
-            self.display_file_unit = "B ".to_string();
-        }
-        else if self.file_size < 1000000 {
-            self.file_size /= 1000;
-            //custom color returns it's own type, needs to be converted to String.
-            self.display_file_unit = color_scheme.parse_text("kb".to_string(), "KB")?;
-        }
-        else if self.file_size < 1000000000 {
-            self.file_size /= 1000000;
-            self.display_file_unit = color_scheme.parse_text("mb".to_string(), "MB")?;
-        }
-        else {
-            self.file_size /= 1000000000;
-            self.display_file_unit = color_scheme.parse_text("gb".to_string(), "GB")?;
-        }
+    const KB: i64 = 1_000;
+    const MB: i64 = 1_000_000;
+    const GB: i64= 1_000_000_000;
 
+    fn size_to_display(&mut self, color_scheme: &ColorScheme) -> Result<(), Box<dyn Error>> {
+
+        let (unit, divisor) = if self.file_size < Self::KB {
+                                ("B ", 1) 
+                              }
+                              else if self.file_size < Self::MB {
+                                ("KB", Self::KB) 
+                              }
+                              else if self.file_size < Self::GB {
+                                ("MB", Self::MB)
+                              }
+                              else {
+                                ("GB", Self::GB)
+                              };
+
+        if divisor == 1 {
+            self.display_file_unit = color_scheme.parse_text("B".to_string(), unit)?;
+        } else {
+            self.display_file_unit = color_scheme.parse_text(unit.to_string(), unit)?;
+            self.file_size /= divisor;
+        }
         Ok(())
     }
 
