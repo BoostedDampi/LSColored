@@ -1,14 +1,12 @@
 use lsc::File;
-use std::error::Error;
 use std::cmp;
-use termsize;
+use std::error::Error;
 
-pub fn get_columns (files: &Vec<File>) -> Result<usize, Box<dyn Error>> {
-
+pub fn get_columns(files: &Vec<File>) -> Result<usize, Box<dyn Error>> {
     //in case that this is not a tty we put every file in distinct lines
     let max_col = match termsize::get() {
         Some(some) => some.cols,
-        None => 1
+        None => 1,
     };
 
     //creating an array of all the name lenghts and sorting them.
@@ -26,18 +24,17 @@ pub fn get_columns (files: &Vec<File>) -> Result<usize, Box<dyn Error>> {
         counter += l;
         if counter < max_col as usize {
             columns += 1;
+        } else {
+            break;
         }
-        else {break}
     }
 
     columns = cmp::max(1, columns);
     Ok(columns)
 }
 
-
 //normal output ls -a or ls
-pub fn normal_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
-
+pub fn normal_output(files: &Vec<File>) -> Result<String, Box<dyn Error>> {
     let mut output = String::new();
 
     let num_col: usize = get_columns(files)?; //TODO this needs logic
@@ -46,7 +43,6 @@ pub fn normal_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
     let mut col_width: Vec<usize> = vec![];
 
     for col in 0..num_col {
-
         let mut current_max = 0;
         for elem in (col..files.len()).step_by(num_col) {
             if files[elem].dn_len > current_max {
@@ -59,11 +55,13 @@ pub fn normal_output(files: &Vec<File>) -> Result<String, Box<dyn Error>>{
     //prints the string
     for (n_elem, file) in files.iter().enumerate() {
         // we add another two spaces of padding and extra padding to account for ANSI Escape characters
-        let padding = col_width[n_elem%num_col]+2+file.display_name.len()-file.dn_len;
+        let padding = col_width[n_elem % num_col] + 2 + file.display_name.len() - file.dn_len;
         output.push_str(&format!("{:<width$}", file.display_name, width = padding));
 
         //the plus one is there becouse enumerate starts from 0
-        if (n_elem+1)%num_col == 0 && n_elem+1 < files.len() {output.push('\n')}
+        if (n_elem + 1) % num_col == 0 && n_elem + 1 < files.len() {
+            output.push('\n')
+        }
     }
 
     Ok(output)
@@ -77,59 +75,100 @@ struct MaxMetadata {
 }
 impl MaxMetadata {
     fn new(files: &Vec<File>) -> MaxMetadata {
-        
         let mut max_size = 0;
         let mut max_uid = 0;
         let mut max_gid = 0;
 
         for file in files {
-            max_size = if file.file_size > max_size {file.file_size} else {max_size};
-            max_gid = if file.display_gid.len() > max_gid {file.display_gid.len()} else {max_gid};
-            max_uid = if file.display_uid.len() > max_uid {file.display_uid.len()} else {max_uid};
+            max_size = if file.file_size > max_size {
+                file.file_size
+            } else {
+                max_size
+            };
+            max_gid = if file.display_gid.len() > max_gid {
+                file.display_gid.len()
+            } else {
+                max_gid
+            };
+            max_uid = if file.display_uid.len() > max_uid {
+                file.display_uid.len()
+            } else {
+                max_uid
+            };
         }
 
-        MaxMetadata {max_size_len: max_size.to_string().len(),
-                     max_gid_len: max_gid,
-                     max_uid_len: max_uid}
+        MaxMetadata {
+            max_size_len: max_size.to_string().len(),
+            max_gid_len: max_gid,
+            max_uid_len: max_uid,
+        }
     }
-    fn update(& self, files: &Vec<File>) -> MaxMetadata {
+
+    fn update(&self, files: &Vec<File>) -> MaxMetadata {
         let mut max_size = 0;
         let mut max_uid = 0;
         let mut max_gid = 0;
 
         for file in files {
-            max_size = if file.file_size > max_size {file.file_size} else {max_size};
-            max_gid = if file.display_gid.len() > max_gid {file.display_gid.len()} else {max_gid};
-            max_uid = if file.display_uid.len() > max_uid {file.display_uid.len()} else {max_uid};
+            max_size = if file.file_size > max_size {
+                file.file_size
+            } else {
+                max_size
+            };
+            max_gid = if file.display_gid.len() > max_gid {
+                file.display_gid.len()
+            } else {
+                max_gid
+            };
+            max_uid = if file.display_uid.len() > max_uid {
+                file.display_uid.len()
+            } else {
+                max_uid
+            };
         }
 
-        MaxMetadata {max_size_len: cmp::max(max_size.to_string().len(), self.max_size_len),
-                     max_gid_len: cmp::max(max_gid, self.max_gid_len),
-                     max_uid_len: cmp::max(max_uid, self.max_uid_len)} 
+        MaxMetadata {
+            max_size_len: cmp::max(max_size.to_string().len(), self.max_size_len),
+            max_gid_len: cmp::max(max_gid, self.max_gid_len),
+            max_uid_len: cmp::max(max_uid, self.max_uid_len),
+        }
     }
 }
 
-
-fn file_to_string (file: &File, max_meta: &MaxMetadata) -> String {
-
+fn file_to_string(file: &File, max_meta: &MaxMetadata) -> String {
     let mut buffer: String = String::new();
 
     buffer.push_str(&format!("{}  ", file.display_perm));
 
-    buffer.push_str(&format!(" {:^uwidth$} {:^gwidth$} ", file.display_uid, file.display_gid, uwidth = cmp::max(max_meta.max_uid_len, 25), gwidth = cmp::max(max_meta.max_gid_len, 25)));
-    
-    buffer.push_str(&format!("{:>lenght$} {}", file.file_size, file.display_file_unit, lenght=max_meta.max_size_len));
+    buffer.push_str(&format!(
+        " {:^uwidth$} {:^gwidth$} ",
+        file.display_uid,
+        file.display_gid,
+        uwidth = cmp::max(max_meta.max_uid_len, 25),
+        gwidth = cmp::max(max_meta.max_gid_len, 25)
+    ));
+
+    buffer.push_str(&format!(
+        "{:>lenght$} {}",
+        file.file_size,
+        file.display_file_unit,
+        lenght = max_meta.max_size_len
+    ));
     buffer.push_str(&format!("  {}", file.display_name));
 
     buffer
 }
 
-pub fn long_output_vec (files: &Vec<File>) -> Result<String, Box<dyn Error>> {
+pub fn long_output_vec(files: &Vec<File>) -> Result<String, Box<dyn Error>> {
     let mut output: Vec<String> = Vec::new();
 
     let max_meta = MaxMetadata::new(files);
 
-    output.push(format!("Permissions {:<uwidth$} Group  Size   Name", "User", uwidth = cmp::max(4, max_meta.max_gid_len-21)));
+    output.push(format!(
+        "Permissions {:<uwidth$} Group  Size   Name",
+        "User",
+        uwidth = cmp::max(4, max_meta.max_gid_len - 21)
+    ));
 
     //populating files
     for file in files.iter() {
@@ -144,7 +183,6 @@ pub fn long_output_vec (files: &Vec<File>) -> Result<String, Box<dyn Error>> {
         }
         output.push(buffer)
     }
-
 
     Ok(output.join("\n"))
 }

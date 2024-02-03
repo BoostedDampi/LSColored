@@ -4,12 +4,11 @@ use std::error::Error;
 
 //a color can be a rgb or hex value
 pub enum Color {
-    RGB {r: u8, g: u8, b: u8},
-    Hex(String)
+    RGB { r: u8, g: u8, b: u8 },
+    Hex(String),
 }
 
 impl Color {
-
     //i need rgb values for the colored create, so i convert them
     fn convert(&self) -> Option<(u8, u8, u8)> {
         match self {
@@ -31,17 +30,16 @@ impl Color {
 
 //this is the general colorscheme that will be used in the program
 pub struct ColorScheme {
-
     pub colors: HashMap<String, Color>,
-
 }
 impl ColorScheme {
-
     pub fn new() -> ColorScheme {
-        ColorScheme {colors: HashMap::new()}
+        ColorScheme {
+            colors: HashMap::new(),
+        }
     }
 
-    pub fn add_rgb(&mut self, elem_name: String, r:u8, g:u8, b:u8) {
+    pub fn add_rgb(&mut self, elem_name: String, r: u8, g: u8, b: u8) {
         self.colors.insert(elem_name, Color::RGB { r, g, b });
     }
 
@@ -50,7 +48,7 @@ impl ColorScheme {
         Ok(format!("{}", text.truecolor(r, g, b)))
     }
 
-    //TODO import from TOML file, problem is i do not know how slow permanent file reads are 
+    //TODO import from TOML file, problem is i do not know how slow permanent file reads are
 }
 
 impl Default for ColorScheme {
